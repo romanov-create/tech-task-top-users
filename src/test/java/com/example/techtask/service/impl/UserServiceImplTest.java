@@ -11,7 +11,7 @@ class UserServiceImplTest {
     UserService userService = new UserServiceImpl();
 
     @Test
-    void getUserInfoTop20() {
+    void getUserInfoTop20Test() {
         userService.setInfo(1, 1, 5);
         userService.setInfo(1, 2, 6);
         userService.setInfo(1, 3, 7);
@@ -21,12 +21,12 @@ class UserServiceImplTest {
         List<User> userInfoTop20 = userService.getUserInfoTop20(1);
 
         Assertions.assertEquals(5, userInfoTop20.size());
-        Assertions.assertEquals(5, userInfoTop20.get(0).getResult());
-        Assertions.assertEquals(9, userInfoTop20.get(4).getResult());
+        Assertions.assertEquals(9, userInfoTop20.get(0).getResult());
+        Assertions.assertEquals(5, userInfoTop20.get(4).getResult());
     }
 
     @Test
-    void getLevelInfoTop20() {
+    void getLevelInfoTop20Test() {
         userService.setInfo(1, 1, 5);
         userService.setInfo(2, 1, 6);
         userService.setInfo(3, 1, 7);
@@ -36,14 +36,14 @@ class UserServiceImplTest {
         List<User> userInfoTop20 = userService.getLevelInfoTop20(1);
 
         Assertions.assertEquals(5, userInfoTop20.size());
-        Assertions.assertEquals(5, userInfoTop20.get(0).getResult());
-        Assertions.assertEquals(9, userInfoTop20.get(4).getResult());
+        Assertions.assertEquals(9, userInfoTop20.get(0).getResult());
+        Assertions.assertEquals(5, userInfoTop20.get(4).getResult());
     }
 
     @Test
-    void setInfo() {
+    void setInfoTest() {
         User user = userService.setInfo(1, 2, 10);
-        
+
         Assertions.assertEquals(10, user.getResult());
         Assertions.assertEquals(1, user.getUserId());
         Assertions.assertEquals(2, user.getLevelId());

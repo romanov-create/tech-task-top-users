@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,8 +21,8 @@ public class UserServiceImpl implements UserService {
     private final int limitScoreByUser = 20;
     private final int limitScoreByLevel = 20;
     private final List<User> users = new ArrayList<>();
-    private final Map<Integer, ArrayList<User>> userScoreTop = new HashMap<>();
-    private final Map<Integer, ArrayList<User>> levelScoreTop = new HashMap<>();
+    private final Map<Integer, LinkedList<User>> userScoreTop = new HashMap<>();
+    private final Map<Integer, LinkedList<User>> levelScoreTop = new HashMap<>();
 
     @PostConstruct
     void initDB() {
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
                 users.add(user);
 
                 putResultByUser(i, user);
-                putUserByLevel(j, user);
+                putResultByLevel(j, user);
             }
         }
     }
@@ -52,54 +53,49 @@ public class UserServiceImpl implements UserService {
         users.add(user);
 
         putResultByUser(userId, user);
-        putUserByLevel(levelId, user);
+        putResultByLevel(levelId, user);
 
         return user;
     }
 
-    private ArrayList<User> getTop20ByUser(int id) {
-        return users.stream()
-                .filter(user -> user.getUserId() == id)
-                .sorted(Comparator.comparingInt(User::getLevelId).reversed())
-                .sorted(Comparator.comparingInt(User::getResult).reversed())
-                .limit(limitScoreByUser)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    private ArrayList<User> getTop20ByLevel(int id) {
-        return users.stream()
-                .filter(user -> user.getLevelId() == id)
-                .sorted(Comparator.comparingInt(User::getUserId).reversed())
-                .sorted(Comparator.comparingInt(User::getResult).reversed())
-                .limit(limitScoreByLevel)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     void putResultByUser(int userId, User user) {
         if (userScoreTop.containsKey(userId)) {
-            if (userScoreTop.get(userId).size() < limitScoreByUser) {
-                userScoreTop.get(userId).add(user);
-            } else {
-                userScoreTop.replace(userId, getTop20ByUser(userId));
+            LinkedList<User> userLinkedList = userScoreTop.get(userId);
+            userLinkedList.add(user);
+
+            LinkedList<User> collectTemp = userLinkedList.stream()
+                    .sorted(Comparator.comparingInt(User::getLevelId).reversed())
+                    .sorted(Comparator.comparingInt(User::getResult).reversed())
+                    .collect(Collectors.toCollection(LinkedList::new));
+
+            if (collectTemp.size() > limitScoreByUser) {
+                collectTemp.removeLast();
             }
+
+            userScoreTop.put(userId, collectTemp);
         } else {
-            ArrayList<User> tempList = new ArrayList<>();
-            tempList.add(user);
-            userScoreTop.put(userId, tempList);
+            userScoreTop.put(userId, new LinkedList<>(List.of(user)));
         }
     }
 
-    void putUserByLevel(int levelId, User user) {
+    void putResultByLevel(int levelId, User user) {
         if (levelScoreTop.containsKey(levelId)) {
-            if (levelScoreTop.get(levelId).size() < limitScoreByLevel) {
-                levelScoreTop.get(levelId).add(user);
-            } else {
-                levelScoreTop.replace(levelId, getTop20ByLevel(levelId));
+            LinkedList<User> userLinkedList = levelScoreTop.get(levelId);
+
+            userLinkedList.add(user);
+
+            LinkedList<User> collectTemp = userLinkedList.stream()
+                    .sorted(Comparator.comparingInt(User::getUserId).reversed())
+                    .sorted(Comparator.comparingInt(User::getResult).reversed())
+                    .collect(Collectors.toCollection(LinkedList::new));
+
+            if (collectTemp.size() > limitScoreByUser) {
+                collectTemp.removeLast();
             }
+
+            levelScoreTop.put(levelId, collectTemp);
         } else {
-            ArrayList<User> tempList = new ArrayList<>();
-            tempList.add(user);
-            levelScoreTop.put(levelId, tempList);
+            levelScoreTop.put(levelId, new LinkedList<>(List.of(user)));
         }
     }
 }
